@@ -1,0 +1,24 @@
+{
+    "sampleStates": [
+        {
+            "name": "Alabama",
+            "value": 3
+        },
+        {
+            "name": "Florida",
+            "value": 2
+        },
+        {
+            "name": "Louisiana",
+            "value": 2
+        },
+        {
+            "name": "Texas",
+            "value": 2
+        },
+        {
+            "name": "Mississippi",
+            "value": 1
+        }
+    ]
+}
