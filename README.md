@@ -1,6 +1,6 @@
-# arcgis-sharepoint-extensions
+# esri-sharepoint-extensions-samples
 
-Samples around ArcGIS map web part to demonstrate different capabilities and possibilities on the dynamic connection feature. Each sample has it's own dedicated readme file to explain setup instructions and demonstrated capability. 
+Samples around ArcGIS map web part to demonstrate different capabilities and possibilities on the dynamic connection feature. Each sample has it's own dedicated readme file to explain setup instructions and demonstrated capability.
 
 If you are first time user, please refer to the [instructions](../../#instructions) section. All samples share the same installation process. Once installation is completed, all sample web parts will be available within SharePoint pages.
 
