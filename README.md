@@ -58,9 +58,24 @@ interface PublishedDataToEsriMapWebPart {
 
 #### Current message published by ArcGIS map web part
 
+##### Available dynamic data property Id definitions
+
+```
+// use this.context.dynamicDataProvider.getAvailableSources() to fetch DynamicDataProvider
+DynamicDataProvider.getPropertyDefinitions()
+// Expected result:
+//[
+//  { id: 'esri-dynamic-data-updates', title: 'Generic property id for all properties changes.' },
+//  { id: 'layer-selection', title: 'Information about selected features and the corresponding layer.' },
+//  { id: 'layer-filter', title: 'Information about filtered features and the corresponding layers.' }
+//]
+
+```
+
 ##### Provider info for ArcGIS map web part
 
 ```
+// This is an example for layer selection event
 // use this.context.dynamicDataProvider.getAvailableSources() to fetch <ESRI_MAP_WEB_PART_INSTANCE_ID>
 const DynamicDataPropertyId = "layer-selection"
 
@@ -107,9 +122,8 @@ interface Item<T = any> {
 
 * Notepad or your favorite HTML editor
 * Web browser with access to the Internet
-* Access to Microsoft SharePoint 
+* Access to Microsoft SharePoint
 * Access to ArcGIS for SharePoint product
-* SharePoint version: ![version](https://img.shields.io/npm/v/@microsoft/sp-component-base/latest?color=green)
 
 ## Resources
 
