@@ -4,7 +4,7 @@ Samples around ArcGIS map web part to demonstrate different capabilities and pos
 
 If you are first time user, please refer to the [instructions](../../#instructions) section. All samples share the same installation process. Once installation is completed, all sample web parts will be available within SharePoint pages.
 
-You can head directly to the folders below and start looking around if you'd like. 
+You can head directly to the folders below and start looking around if you'd like.
 
 If you are interested in the current supported data format, please refer to [Current Structure](../../#current-structure) section
 
@@ -12,8 +12,9 @@ If you are interested in the current supported data format, please refer to [Cur
 
 ## Features
 
-* [Sample consumer](./src/webparts/sampleConsumer) 
+* [Sample consumer](./src/webparts/sampleConsumer)
 * [Sample provider](./src/webparts/sampleProvider)
+* [Search sample provider](./src/webparts/searchSampleProvider)
 
 ## Instructions
 
