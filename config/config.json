@@ -17,11 +17,20 @@
           "manifest": "./src/webparts/sampleProvider/SampleProviderWebPart.manifest.json"
         }
       ]
+    },
+    "search-sample-provider-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/searchSampleProvider/SearchSampleProviderWebPart.js",
+          "manifest": "./src/webparts/searchSampleProvider/SearchSampleProviderWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "SampleConsumerWebPartStrings": "lib/webparts/sampleConsumer/loc/{locale}.js",
-    "SampleProviderWebPartStrings": "lib/webparts/sampleProvider/loc/{locale}.js"
+    "SampleProviderWebPartStrings": "lib/webparts/sampleProvider/loc/{locale}.js",
+    "SearchSampleProviderWebPartStrings": "lib/webparts/searchSampleProvider/loc/{locale}.js"
   }
 }
