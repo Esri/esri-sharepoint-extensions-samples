@@ -1,6 +1,6 @@
 # esri-sharepoint-extensions-samples
 
-Samples around ArcGIS map web part to demonstrate different capabilities and possibilities on the dynamic connection feature. Each sample has it's own dedicated readme file to explain setup instructions and demonstrated capability.
+Samples around ArcGIS map web part to demonstrate different capabilities and possibilities on the dynamic web part connectivity feature. Each sample has it's own dedicated readme file to explain setup instructions and demonstrated capability.
 
 If you are first time user, please refer to the [instructions](../../#instructions) section. All samples share the same installation process. Once installation is completed, all sample web parts will be available within SharePoint pages.
 
@@ -32,22 +32,9 @@ If you are interested in the current supported data format, please refer to [Cur
 
 ### Current Structure
 
-#### Provider standard for ArcGIS map web part to consume
+#### Standard for sending data to ArcGIS map web part
 
-##### Provider property requirement
-
-```
-// Please make sure the data from your web part is published through this property id.
-const SourcePropertyId = "esri-dynamic-data";
-
-public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
-  return [
-    { id: SourcePropertyId, title: 'ArcGIS Dynamic data' }
-  ];
-}
-```
-
-#### Detail message requirement
+#### Detail message requirement (what you can send)
 
 ```
 interface PublishedDataToEsriMapWebPart {
@@ -57,9 +44,59 @@ interface PublishedDataToEsriMapWebPart {
 }
 ```
 
-#### Current message published by ArcGIS map web part
+##### Provider property requirement (how to establish connection and send data)
 
-##### Available dynamic data property Id definitions
+```
+// Please make sure the data from your web part is published through this property id.
+const SourcePropertyId = "esri-dynamic-data";
+// Data store for your message
+private currentMessage:  PublishedDataToEsriMapWebPart = undefined;
+
+public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
+  return [
+    { id: SourcePropertyId, title: 'ArcGIS Dynamic data' }
+  ];
+}
+
+public async onInit(): Promise<void> {
+  // this line below is important! This enables this web part as a publisher for dynamic data.
+  this.context.dynamicDataSourceManager.initializeSource(this);
+  return super.onInit();
+}
+
+private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
+  this.currentMessage = input;
+  // notify subscribers that the selected event has changed
+  this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
+  this.render();
+}
+
+public getPropertyValue(propertyId: string) {
+  switch (propertyId) {
+    case SourcePropertyId:
+      return this.currentMessage;
+    }
+    throw new Error('Bad property id');
+}
+```
+
+##### Notify SPFx page context with your message update when needed
+
+```
+private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
+  this.currentMessage = input;
+  // notify subscribers that the selected event has changed
+  this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
+  this.render();
+}
+
+this._onPropertyChanged(newValue);
+
+```
+
+#### Standard for receiving data from ArcGIS map web part 
+
+##### Available dynamic data property Id definitions (what you can receive)
 
 ```
 // use this.context.dynamicDataProvider.getAvailableSources() to fetch DynamicDataProvider
@@ -73,12 +110,13 @@ DynamicDataProvider.getPropertyDefinitions()
 
 ```
 
-##### Provider info for ArcGIS map web part
+##### How to set up connection to receive data
 
 ```
 // This is an example for layer selection event
 // use this.context.dynamicDataProvider.getAvailableSources() to fetch <ESRI_MAP_WEB_PART_INSTANCE_ID>
-const DynamicDataPropertyId = "layer-selection"
+const DynamicDataPropertyId = "layer-selection" 
+// change DynamicDataPropertyId to 'layer-filter' for filter info, change to 'esri-dynamic-data-updates' to receive both event
 
 this.context.dynamicDataProvider.registerPropertyChanged(<ESRI_MAP_WEB_PART_INSTANCE_ID>, DynamicDataPropertyId, async ()=>{
     const selectionInfo: ArcGISSelectionData = await mapWebPartSource.getPropertyValueAsync(DynamicDataPropertyId);
@@ -86,7 +124,7 @@ this.context.dynamicDataProvider.registerPropertyChanged(<ESRI_MAP_WEB_PART_INST
 });
 ```
 
-#### Expected message format
+##### Expected message format ('layer-selection' example)
 
 ````
 interface ArcGISSelectionData<T = any> {
