@@ -27,7 +27,7 @@ import SampleProvider from './components/SampleProvider';
 import { ISampleProviderProps } from './components/ISampleProviderProps';
 import { IDynamicDataCallables, IDynamicDataPropertyDefinition } from '@microsoft/sp-dynamic-data';
 
-export interface ISampleProviderWebPartProps {}
+export interface ISampleProviderWebPartProps { }
 
 export interface PublishedDataToEsriMapWebPart {
   // strings for constructing where clause to filter feature layer features on Esri Map Web Part side
@@ -37,19 +37,19 @@ export interface PublishedDataToEsriMapWebPart {
 
 // This is the property Id that ArcGIS map web part is able to listen.
 // Please make sure the data from third party provider is published through this property id.
-const SourcePropertyId = "esri-dynamic-data";
+const sourcePropertyId = "esri-dynamic-data";
 
 export default class SampleProviderWebPart extends BaseClientSideWebPart<ISampleProviderWebPartProps> implements IDynamicDataCallables {
 
 
-  private currentMessage:  PublishedDataToEsriMapWebPart = undefined;
+  private currentMessage: PublishedDataToEsriMapWebPart = undefined;
   /**
    * Return list of dynamic data properties that this dynamic data source
    * returns
    */
   public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
     return [
-      { id: SourcePropertyId, title: 'ArcGIS Dynamic data' }
+      { id: sourcePropertyId, title: 'ArcGIS Dynamic data' }
     ];
   }
 
@@ -59,7 +59,7 @@ export default class SampleProviderWebPart extends BaseClientSideWebPart<ISample
    */
   public getPropertyValue(propertyId: string) {
     switch (propertyId) {
-      case SourcePropertyId:
+      case sourcePropertyId:
         return this.currentMessage;
     }
 
@@ -76,8 +76,7 @@ export default class SampleProviderWebPart extends BaseClientSideWebPart<ISample
     const element: React.ReactElement<ISampleProviderProps> = React.createElement(
       SampleProvider,
       {
-        onNotifyChange: this._onPropertyChanged,
-        currentMessage: this.currentMessage
+        onNotifyChange: this._onPropertyChanged.bind(this)
       }
     );
 
@@ -92,11 +91,12 @@ export default class SampleProviderWebPart extends BaseClientSideWebPart<ISample
     return Version.parse('1.0');
   }
 
-  private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
+  private _onPropertyChanged(input: PublishedDataToEsriMapWebPart): void {
+    // update local cache for property fetch
     this.currentMessage = input;
+
     // notify subscribers that the selected event has changed
-    this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
-    this.render();
+    this.context.dynamicDataSourceManager.notifyPropertyChanged(sourcePropertyId);
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {

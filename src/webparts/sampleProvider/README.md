@@ -1,7 +1,7 @@
 # Sample Provider
 ## Summary
 
-This webpart can serve as a sample provider to send data to ArcGIS for SharePoint Map web part.
+This webpart can serve as a sample provider. Click on donut chart to filter US county polygons on the map.
 
 ![App](./sampleProvider.gif)
 

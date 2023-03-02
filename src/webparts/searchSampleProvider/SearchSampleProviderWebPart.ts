@@ -37,7 +37,7 @@ export interface PublishedDataToEsriMapWebPart {
 
 // This is the property Id that ArcGIS map web part is able to listen.
 // Please make sure the data from third party provider is published through this property id.
-const SourcePropertyId = "esri-dynamic-data";
+const sourcePropertyId = "esri-dynamic-data";
 
 export default class SearchSampleProviderWebPart extends BaseClientSideWebPart<ISearchSampleProviderWebPartProps> {
 
@@ -48,7 +48,7 @@ export default class SearchSampleProviderWebPart extends BaseClientSideWebPart<I
    */
   public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
     return [
-      { id: SourcePropertyId, title: 'ArcGIS Dynamic data' }
+      { id: sourcePropertyId, title: 'ArcGIS Dynamic data' }
     ];
   }
 
@@ -58,7 +58,7 @@ export default class SearchSampleProviderWebPart extends BaseClientSideWebPart<I
    */
   public getPropertyValue(propertyId: string) {
     switch (propertyId) {
-      case SourcePropertyId:
+      case sourcePropertyId:
         return this.currentMessage;
     }
 
@@ -75,7 +75,7 @@ export default class SearchSampleProviderWebPart extends BaseClientSideWebPart<I
     const element: React.ReactElement<ISearchSampleProviderProps> = React.createElement(
       SearchSampleProvider,
       {
-        onNotifyChange: this._onPropertyChanged
+        onNotifyChange: this._onPropertyChanged.bind(this)
       }
     );
 
@@ -90,11 +90,12 @@ export default class SearchSampleProviderWebPart extends BaseClientSideWebPart<I
     return Version.parse('1.0');
   }
 
-  private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
+  private _onPropertyChanged (input:  PublishedDataToEsriMapWebPart): void {
+    // update local message cache for property value fetch
     this.currentMessage = input;
+
     // notify subscribers that the selected event has changed
-    this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
-    this.render();
+    this.context.dynamicDataSourceManager.notifyPropertyChanged(sourcePropertyId);
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {

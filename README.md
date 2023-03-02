@@ -2,24 +2,33 @@
 
 Samples around ArcGIS map web part to demonstrate different capabilities and possibilities on the dynamic web part connectivity feature. Each sample has it's own dedicated readme file to explain setup instructions and demonstrated capability.
 
-If you are first time user, please refer to the [instructions](../../#instructions) section. All samples share the same installation process. Once installation is completed, all sample web parts will be available within SharePoint pages.
+If you are first time user, please refer to the [instructions](../../#instructions) section. All samples share the same installation process. Once installation is completed, all sample web parts will be available within SharePoint page's web part gallery.
 
 You can head directly to the folders below and start looking around if you'd like.
 
-If you are interested in the current supported data format, please refer to [Current Structure](../../#current-structure) section
 
 ![App](./arcgis-sharepoint-extensions.gif)
 
 ## Features
 
 * [Sample consumer](./src/webparts/sampleConsumer)
+
+  sample consumer web part to show sales bar chart for selected restaurants on the map.
+
+
 * [Sample provider](./src/webparts/sampleProvider)
+
+  sample provider web part (donut chart) to filter US county polygons on the map.
+
+
 * [Search sample provider](./src/webparts/searchSampleProvider)
+
+  sample search web part to filter US county polygons on the map.
 
 ## Instructions
 
 * clone this repo
-* move to right folder
+* navigate to repo root folder
 * in the command line run:
   * `npm install`
   * `gulp bundle --ship`
@@ -28,135 +37,121 @@ If you are interested in the current supported data format, please refer to [Cur
 * in the site where you want to test this solution
   * add the app named _arc-gis-spfx-examples_
   * edit a page
-  * You should be able to see all the web parts samples available in your page
+  * You should be able to see all the sample web parts available in the web part gallery
 
-### Current Structure
+## SPFx web part connectivity common practice
 
-#### Standard for sending data to ArcGIS map web part
+![Diagram](./SPFx-dynamic-data-flow.png)
 
-#### Detail message requirement (what you can send)
+## Standard for receiving data from ArcGIS map web part
 
-```
-interface PublishedDataToEsriMapWebPart {
-  // strings for constructing where clause to filter feature layer features on Esri Map Web Part side
-  filterText?: string[];
-  // ... more to come
-}
-```
+Dynamic data property | Description
+----  | ----
+layer-selection | Information about selected features and the corresponding layer.
+layer-filter | Information about filtered features and the corresponding layers.
+esri-dynamic-data-updates | Generic property id for all properties changes.
 
-##### Provider property requirement (how to establish connection and send data)
+#### How to subscribe to dynamic data property change?
+ Register dynamic data property change callBack via [`registerPropertyChanged`](https://learn.microsoft.com/en-us/javascript/api/sp-component-base/dynamicdataprovider?view=sp-typescript-latest#@microsoft-sp-component-base-dynamicdataprovider-registerpropertychanged-member(1)) method.
 
-```
-// Please make sure the data from your web part is published through this property id.
-const SourcePropertyId = "esri-dynamic-data";
-// Data store for your message
-private currentMessage:  PublishedDataToEsriMapWebPart = undefined;
-
-public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
-  return [
-    { id: SourcePropertyId, title: 'ArcGIS Dynamic data' }
-  ];
-}
-
-public async onInit(): Promise<void> {
-  // this line below is important! This enables this web part as a publisher for dynamic data.
-  this.context.dynamicDataSourceManager.initializeSource(this);
-  return super.onInit();
-}
-
-private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
-  this.currentMessage = input;
-  // notify subscribers that the selected event has changed
-  this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
-  this.render();
-}
-
-public getPropertyValue(propertyId: string) {
-  switch (propertyId) {
-    case SourcePropertyId:
-      return this.currentMessage;
-    }
-    throw new Error('Bad property id');
-}
-```
-
-##### Notify SPFx page context with your message update when needed
 
 ```
-private _onPropertyChanged = (input:  PublishedDataToEsriMapWebPart): void => {
-  this.currentMessage = input;
-  // notify subscribers that the selected event has changed
-  this.context.dynamicDataSourceManager.notifyPropertyChanged(SourcePropertyId);
-  this.render();
-}
+// This is an example for receiving "layer-selection" dynamic data property
 
-this._onPropertyChanged(newValue);
+// fetch source map web part instance (assuming there is only one map web part in the SharePoint page)
+const mapWebPartSource = this.context.dynamicDataProvider.getAvailableSources().find(availableSource => {
+  // component Id for ArcGIS map web part: "74d48445-8546-4cf0-a3ca-2e49279b3887"
+  return availableSource.metadata?.componentId === "74d48445-8546-4cf0-a3ca-2e49279b3887";
+});
 
-```
-
-#### Standard for receiving data from ArcGIS map web part 
-
-##### Available dynamic data property Id definitions (what you can receive)
-
-```
-// use this.context.dynamicDataProvider.getAvailableSources() to fetch DynamicDataProvider
-DynamicDataProvider.getPropertyDefinitions()
-// Expected result:
-//[
-//  { id: 'esri-dynamic-data-updates', title: 'Generic property id for all properties changes.' },
-//  { id: 'layer-selection', title: 'Information about selected features and the corresponding layer.' },
-//  { id: 'layer-filter', title: 'Information about filtered features and the corresponding layers.' }
-//]
-
-```
-
-##### How to set up connection to receive data
-
-```
-// This is an example for layer selection event
-// use this.context.dynamicDataProvider.getAvailableSources() to fetch <ESRI_MAP_WEB_PART_INSTANCE_ID>
-const DynamicDataPropertyId = "layer-selection" 
-// change DynamicDataPropertyId to 'layer-filter' for filter info, change to 'esri-dynamic-data-updates' to receive both event
-
-this.context.dynamicDataProvider.registerPropertyChanged(<ESRI_MAP_WEB_PART_INSTANCE_ID>, DynamicDataPropertyId, async ()=>{
-    const selectionInfo: ArcGISSelectionData = await mapWebPartSource.getPropertyValueAsync(DynamicDataPropertyId);
+// Please refer to step 3 in the diagram above.
+this.context.dynamicDataProvider.registerPropertyChanged(
+    mapWebPartSource.dynamicDataSource.id,      // source map web part instance Id
+    "layer-selection",                          // dynamic data property Id
+    async ()=>{                                 // callback
+      // Please refer to step 6 in the diagram above.
+      const selectionInfo: ArcGISSelectionData = await mapWebPartSource.getPropertyValueAsync(dynamicDataPropertyId);
     // write your own code to work with selectionInfo
 });
 ```
 
-##### Expected message format ('layer-selection' example)
+#### What does dynamic data property look like?
 
-````
-interface ArcGISSelectionData<T = any> {
-    // layerInfo contains all the layer related metadata based on the selection
-    layerInfo: LayerInfo;
-    // SelectedItems contains all the features attributes based on the selection
-    selectedItems: Item<T>[];
-}
+[Detailed Dynamic data property interface](./src/webparts/sampleConsumer/interface.ts#L17)
 
-interface LayerInfo {
-    // layerSource provides the data source type of the layer
-    layerSource: "Sharepoint" | "ArcGIS";
-    // spListInfo (optional): contains all the list related metadata is the layer is created from a SharePoint list
-    spListInfo?: SPListInfo;
-    geometryType: "point" | "polyline" | "polygon";
-    title?: string;
-    // layerUrl (optional): provides the layer url for ArcGIS layers
-    layerUrl?: string;
-}
+## Standard for sending data to ArcGIS map web part
 
-export interface SPListInfo {
-    webId: string;
-    listId: string;
-    viewId: string;
-}
+#### Available dynamic data property your web part can send
 
-interface Item<T = any> {
-    // listItemID (optional): contains the item index for the feature in SharePoint list
-    listItemID?: string;
-    attributes: T;
+Dynamic data property | Description
+----  | ----
+esri-dynamic-data | Filter text that your web part can send
+
+#### Detailed Dynamic data property interface (i.e., what your web part can send)
+
+```
+interface PublishedDataToEsriMapWebPart {
+
+  // strings for constructing where clause to filter feature layer features on Esri Map Web Part side
+  filterText?: string[];
+
+  // ... more to come
 }
-````
+```
+
+#### How to establish connection and send data
+
+```
+// Please make sure the data send from your web part is published through this property id.
+// ArcGIS for SharePoint map web part currently only work with this property id.
+const sourcePropertyId = "esri-dynamic-data";
+
+class SampleProviderWebPart extends BaseClientSideWebPart<ISampleProviderWebPartProps> implements IDynamicDataCallables {
+
+  // Local data store for the dynamic data property value to be sent (i.e., filter text)
+  private currentMessage:  PublishedDataToEsriMapWebPart = undefined;
+
+
+  public async onInit(): Promise<void> {
+    // this line below is important! This enables this web part as a publisher for dynamic data.
+    // Please refer to step 1 in the diagram above.
+    this.context.dynamicDataSourceManager.initializeSource(this);
+    return super.onInit();
+  }
+
+  // implement IDynamicDataCallables interface method to define "esri-dynamic-data" dynamic data properties for consumer to consume
+  public getPropertyDefinitions(): ReadonlyArray<IDynamicDataPropertyDefinition> {
+    // Please refer to step 2 in the diagram above.
+    return [
+      { id: sourcePropertyId, title: 'ArcGIS Dynamic data' }
+    ];
+  }
+
+  // implement IDynamicDataCallables interface method to return updated dynamic property value
+  public getPropertyValue(propertyId: string) {
+    switch (propertyId) {
+      case sourcePropertyId:
+        // Please refer to step 7 in the diagram above.
+        return this.currentMessage;
+      }
+      throw new Error('Bad property id');
+  }
+}
+```
+
+#### Notify SPFx page context with your dynamic data property update when needed
+
+Notify SPFx page context with your dynamic data property update via [notifyPropertyChanged](https://learn.microsoft.com/en-us/javascript/api/sp-component-base/dynamicdatasourcemanager?view=sp-typescript-latest#@microsoft-sp-component-base-dynamicdatasourcemanager-notifypropertychanged-member(1)) method.
+
+```
+// update local dynamic data properties cache with the new value `input`
+this.currentMessage: PublishedDataToEsriMapWebPart = input;
+
+// notify subscribers that the selected property value has changed, please refer to step 4 in the diagram above.
+this.context.dynamicDataSourceManager.notifyPropertyChanged(sourcePropertyId);
+
+
+```
 ## Requirements
 
 * Notepad or your favorite HTML editor
@@ -165,7 +160,9 @@ interface Item<T = any> {
 * Access to ArcGIS for SharePoint product
 
 ## Resources
-
+* [SPFx dynamic data](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/dynamic-data)
+* [SPFx DynamicDataProvider class](https://learn.microsoft.com/en-us/javascript/api/sp-component-base/dynamicdataprovider)
+* [SPFx DynamicDataSourceManager class](https://learn.microsoft.com/en-us/javascript/api/sp-component-base/dynamicdatasourcemanager)
 * [ArcGIS for SharePoint Documentation](https://doc.arcgis.com/en/sharepoint/latest/use-maps/get-started-with-arcgis-maps.htm)
 * [ArcGIS for SharePoint Blog](https://www.esri.com/arcgis-blog/?s=#&products=esri-maps-sharepoint)
 * [twitter@esri](http://twitter.com/esri)

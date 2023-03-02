@@ -17,6 +17,5 @@
 import {  PublishedDataToEsriMapWebPart } from "../SampleProviderWebPart";
 
 export interface ISampleProviderProps {
-  currentMessage:  PublishedDataToEsriMapWebPart;
   onNotifyChange: (input:  PublishedDataToEsriMapWebPart)=>void;
 }
