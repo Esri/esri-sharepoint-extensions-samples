@@ -15,19 +15,26 @@
  */
 
 export interface ArcGISSelectionData<T=any> {
+
     // layerInfo contains all the layer related metadata based on the selection
     layerInfo: LayerInfo;
+
     // SelectedItems contains all the features attributes based on the selection
     selectedItems: Item<T>[];
 }
 
 interface LayerInfo {
+
     // layerSource provides the data source type of the layer
     layerSource: "Sharepoint" | "ArcGIS";
+
     // spListInfo (optional): contains all the list related metadata is the layer is created from a SharePoint list
     spListInfo?: SPListInfo;
+
     geometryType: "point" | "polyline" | "polygon";
+
     title?: string;
+
     // layerUrl (optional): provides the layer url for ArcGIS layers
     layerUrl?: string;
 }
@@ -39,8 +46,10 @@ export interface SPListInfo {
 }
 
 interface Item<T = any> {
+
     // listItemID (optional): contains the item index for the feature in SharePoint list
     listItemID?: string;
+
     attributes: T;
 }
 

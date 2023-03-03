@@ -53,15 +53,7 @@ const renderActiveShape = (props) => {
 
 const SampleProvider = (props: ISampleProviderProps) => {
 
-  const currentActiveIndex = React.useMemo(()=>{
-    let tempIndex: number;
-    sampleStates.forEach((item, index)=> {
-      if(item.name === props.currentMessage?.filterText[0]){
-        tempIndex = index;
-      }
-    });
-    return tempIndex;
-  },[props.currentMessage]);
+  const [currentActiveIndex, setCurrentActiveIndex] = React.useState(undefined);
 
   return (
     <div className={styles.sampleProvider}>
@@ -76,16 +68,18 @@ const SampleProvider = (props: ISampleProviderProps) => {
                 activeIndex={currentActiveIndex}
                 activeShape={renderActiveShape}
                 onClick={(_, index) => {
-                  props.onNotifyChange({filterText: [sampleStates[index]?.name]});
+                  setCurrentActiveIndex(index);
+                  props.onNotifyChange({ filterText: [sampleStates[index]?.name] });
                 }}>{sampleStates.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))} </Pie>
               <Legend layout="vertical" align="right" />
             </PieChart>
           </ResponsiveContainer>
-          <p className={styles.description}>{props.currentMessage ? `Current message: ${props.currentMessage.filterText[0] || null}` : "No current message"}</p>
+          <p className={styles.description}>{(currentActiveIndex || currentActiveIndex === 0) ? `Current message: ${sampleStates[currentActiveIndex]?.name}` : "No current message"}</p>
           <button onClick={() => {
-            props.onNotifyChange({filterText: []});
+            props.onNotifyChange({ filterText: [] });
+            setCurrentActiveIndex(undefined);
           }}>Clear selection</button>
         </div>
       </div>
