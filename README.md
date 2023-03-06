@@ -13,7 +13,7 @@ You can head directly to the folders below and start looking around if you'd lik
 
 * [Sample consumer](./src/webparts/sampleConsumer)
 
-  sample consumer web part to show sales bar chart for selected restaurants on the map.
+  sample consumer web part to show quarterly sales bar chart for selected data points on the map.
 
 
 * [Sample provider](./src/webparts/sampleProvider)

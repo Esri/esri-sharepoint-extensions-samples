@@ -26,6 +26,12 @@ import SampleConsumer from './components/SampleConsumer';
 import { ISampleConsumerProps } from './components/ISampleConsumerProps';
 import { ArcGISSelectionData, SalesData } from './interface';
 
+import { sp } from "@pnp/sp";
+import "@pnp/sp/webs";
+import "@pnp/sp/lists";
+import "@pnp/sp/fields";
+
+
 // This is the component Id for all ArcGIS for Sharepoint web part, please use this component Id to filter ArcGIS map web part.
 const ArcGISMapWebPartComponentId = "74d48445-8546-4cf0-a3ca-2e49279b3887";
 // This is the property Id to listen to layer selection events published by ArcGIS map web part.
@@ -36,9 +42,17 @@ export interface ISampleConsumerWebPartProps { }
 export default class SampleConsumerWebPart extends BaseClientSideWebPart<ISampleConsumerWebPartProps> {
 
   private _arcGISWebPartSelectionInfo: ArcGISSelectionData<SalesData>;
+
   private _currentAvailableMapWebParts;
 
   public async onInit(): Promise<void> {
+
+    sp.setup({
+      sp: {
+        baseUrl: this.context.pageContext.web.absoluteUrl // immune to multiple web part instances
+      }
+    });
+
     this.context.dynamicDataProvider.registerAvailableSourcesChanged(async () => {
 
       // fetch available map web part currently within page
@@ -64,6 +78,20 @@ export default class SampleConsumerWebPart extends BaseClientSideWebPart<ISample
             callBack: async () => {
               const selectionInfo = await webPartSource.getPropertyValueAsync(dynamicDataPropertyId) as ArcGISSelectionData<SalesData>;
               if (selectionInfo) {
+                if (selectionInfo.layerInfo.layerSource === "Sharepoint" && selectionInfo.layerInfo.spListInfo) {
+                  // the field internalName and displayName might not be the same (such as the internalName for the "JanuarySales" field might be
+                  // field_1 if the SharePoint list is imported from csv file), so we have to copy the value for the SampleConsumer
+                  // component to read the value properly;
+                  const fields = await sp.web.lists.getById(selectionInfo.layerInfo.spListInfo.listId).fields();
+                  const numericFields = fields.filter(field => !field.Hidden && field.TypeAsString === "Number");
+                  numericFields.forEach((field) => {
+                    selectionInfo.selectedItems.forEach((item => {
+                      if (item.attributes[field.InternalName]) {
+                        item.attributes[field.Title] = item.attributes[field.InternalName];
+                      }
+                    }));
+                  });
+                }
                 this._arcGISWebPartSelectionInfo = selectionInfo;
                 this.render();
               }

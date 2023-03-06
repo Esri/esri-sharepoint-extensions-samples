@@ -23,9 +23,9 @@ const SampleConsumer = (props: ISampleConsumerProps) => {
 
   const sanitizedSelectionInfo = React.useMemo(() => {
     if (props.arcGISWebPartSelectionInfo?.selectedItems) {
-      return props.arcGISWebPartSelectionInfo.selectedItems.map(feature => {
+      return props.arcGISWebPartSelectionInfo.selectedItems.map((feature, index) => {
         return {
-          name: feature.attributes.Title,
+          name: index + 1,
           q1Sale: feature.attributes.JanuarySales + feature.attributes.FebruarySales + feature.attributes.MarchSales,
           q2Sale: feature.attributes.AprilSales + feature.attributes.MaySales + feature.attributes.JuneSales,
           q3Sale: feature.attributes.JulySales + feature.attributes.AugustSales + feature.attributes.SeptemberSales,
