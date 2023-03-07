@@ -17,3 +17,9 @@ You can use either a SharePoint list or a public ArcGIS feature layer as the sou
 
 #### or use public ArcGIS layer
 - https://m4ons.maps.arcgis.com/home/item.html?id=1a6ccd9736f44cc78576437b554b1bdb#overview
+
+## Steps
+1. Add ArcGIS map web part to SharePoint page;
+2. Add the above layer (either a SharePointListLayer or ArcGIS hosted feature layer) to the map;
+3. Add the SampleConsumer web part to the SharePoint page;
+4. Use selection tool to select points on the map and the sample consumer web part should display barchart accordingly.
